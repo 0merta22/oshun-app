@@ -6423,72 +6423,35 @@ function BeautyConcierge({ isOpen, onClose, setPage, setCart }) {
     if (!msg || typing) return;
     setInput("");
 
-    // Add user message immediately
-    setMessages(prev => [...prev, { id:Date.now(), role:"user", text:msg, recs:[], services:[] }]);
+    setMessages(prev => [...prev, { id: Date.now(), role: "user", text: msg, recs: [], services: [] }]);
     setTyping(true);
-
-    // The reply bubble is added on first token so there's no empty bubble flash
-    const replyId   = Date.now() + 1;
-    let replyAdded  = false;
 
     try {
       const res = await sendConciergeMessage(msg, conversationId);
+      const data = await res.json();
 
-      if (!res.ok) throw new Error(`Server error ${res.status}`);
+      if (!res.ok) throw new Error(data.error || `Server error ${res.status}`);
 
-      const reader  = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer    = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop(); // keep any incomplete line for next chunk
-
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          try {
-            const data = JSON.parse(line.slice(6));
-
-            if (data.conversation_id && !conversationId) {
-              setConversationId(data.conversation_id);
-            }
-
-            if (data.token) {
-              if (!replyAdded) {
-                // First token — create the reply bubble
-                replyAdded = true;
-                setMessages(prev => [...prev, { id:replyId, role:"ai", text:data.token, recs:[], services:[] }]);
-              } else {
-                // Subsequent tokens — append to existing bubble
-                setMessages(prev => prev.map(m =>
-                  m.id === replyId ? { ...m, text: m.text + data.token } : m
-                ));
-              }
-            }
-
-            if (data.done)  setTyping(false);
-
-            if (data.error) {
-              const errMsg = data.error;
-              setMessages(prev => replyAdded
-                ? prev.map(m => m.id === replyId ? { ...m, text: errMsg } : m)
-                : [...prev, { id:replyId, role:"ai", text:errMsg, recs:[], services:[] }]
-              );
-              setTyping(false);
-            }
-          } catch { /* skip malformed SSE lines */ }
-        }
+      if (data.conversation_id && !conversationId) {
+        setConversationId(data.conversation_id);
       }
+
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        role: "ai",
+        text: data.reply || "I'm not sure how to help with that — try rephrasing?",
+        recs: [],
+        services: [],
+      }]);
+
     } catch (err) {
-      const fallback = "I'm having trouble connecting right now. Please try again in a moment.";
-      setMessages(prev => replyAdded
-        ? prev.map(m => m.id === replyId ? { ...m, text: fallback } : m)
-        : [...prev, { id:replyId, role:"ai", text:fallback, recs:[], services:[] }]
-      );
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        role: "ai",
+        text: "I'm having trouble connecting right now. Please try again in a moment.",
+        recs: [],
+        services: [],
+      }]);
     } finally {
       setTyping(false);
     }

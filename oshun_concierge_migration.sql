@@ -7,7 +7,7 @@
 -- ── Conversation sessions ────────────────────────────────────
 CREATE TABLE IF NOT EXISTS concierge_conversations (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id         UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id         UUID REFERENCES users(id) ON DELETE CASCADE,
   created_at      TIMESTAMPTZ DEFAULT now(),
   last_message_at TIMESTAMPTZ DEFAULT now()
 );
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS concierge_messages (
 CREATE TABLE IF NOT EXISTS concierge_conversions (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   conversation_id  UUID REFERENCES concierge_conversations(id) ON DELETE SET NULL,
-  user_id          UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  user_id          UUID REFERENCES users(id) ON DELETE SET NULL,
   conversion_type  TEXT CHECK (conversion_type IN (
                      'add_to_cart',
                      'booking_initiated',
@@ -52,24 +52,12 @@ ALTER TABLE concierge_conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE concierge_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE concierge_conversions ENABLE ROW LEVEL SECURITY;
 
--- Users can only see/manage their own conversations
+-- Service role handles all operations (backend uses service key, bypasses RLS)
 DROP POLICY IF EXISTS "Users own their conversations" ON concierge_conversations;
-CREATE POLICY "Users own their conversations"
-  ON concierge_conversations FOR ALL
-  USING (auth.uid() = user_id);
+CREATE POLICY "service_all_conversations" ON concierge_conversations FOR ALL USING (true) WITH CHECK (true);
 
--- Users can read messages in their own conversations
 DROP POLICY IF EXISTS "Users can read own messages" ON concierge_messages;
-CREATE POLICY "Users can read own messages"
-  ON concierge_messages FOR SELECT
-  USING (
-    auth.uid() = (
-      SELECT user_id FROM concierge_conversations WHERE id = conversation_id
-    )
-  );
+CREATE POLICY "service_all_messages" ON concierge_messages FOR ALL USING (true) WITH CHECK (true);
 
--- Users can see their own conversions
 DROP POLICY IF EXISTS "Users can read own conversions" ON concierge_conversions;
-CREATE POLICY "Users can read own conversions"
-  ON concierge_conversions FOR SELECT
-  USING (auth.uid() = user_id);
+CREATE POLICY "service_all_conversions" ON concierge_conversions FOR ALL USING (true) WITH CHECK (true);
