@@ -1164,11 +1164,132 @@ function HomePage({ setPage, setSelectedBusiness, setSelectedService, setSearchQ
 // ─────────────────────────────────────────────────────────────
 // PRODUCT CARD
 // ─────────────────────────────────────────────────────────────
-function ProductCard({ product, onAddToCart, inCart }) {
+// ─────────────────────────────────────────────────────────────
+// PRODUCT DETAIL MODAL
+// ─────────────────────────────────────────────────────────────
+function ProductDetailModal({ product, onClose, onAddToCart, inCart }) {
   const [added, setAdded] = useState(false);
-  const [hovered, setHovered] = useState(false);
   const outOfStock = product.stock === 0;
+
   const handleAdd = () => {
+    if (outOfStock) return;
+    onAddToCart();
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1500);
+    toast.success(`${product.name} added to cart`, { icon: "🛍️", duration: 2000 });
+  };
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)", zIndex: 1000, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "0 0 0 0" }}
+      >
+        <motion.div
+          initial={{ y: "100%", opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: "100%", opacity: 0 }}
+          transition={{ type: "spring", stiffness: 340, damping: 32 }}
+          onClick={e => e.stopPropagation()}
+          style={{
+            background: T.bgCard,
+            border: `1px solid ${T.borderGlow}`,
+            borderRadius: "24px 24px 0 0",
+            width: "100%",
+            maxWidth: 560,
+            maxHeight: "90vh",
+            overflowY: "auto",
+            boxShadow: `0 -8px 48px rgba(0,0,0,0.6), 0 0 0 1px ${T.borderGlow}`,
+          }}
+        >
+          {/* Hero gradient */}
+          <div style={{ height: 200, background: product.gradient, position: "relative", borderRadius: "24px 24px 0 0", overflow: "hidden" }}>
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.5) 100%)" }} />
+            <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, background: "rgba(0,0,0,0.5)", border: `1px solid rgba(255,255,255,0.15)`, backdropFilter: "blur(8px)", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "white", zIndex: 2 }}>
+              <X size={16} />
+            </button>
+            {outOfStock && (
+              <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 3 }}>
+                <span style={{ background: T.error, color: "white", fontWeight: 800, fontSize: 12, padding: "6px 14px", borderRadius: 8, letterSpacing: "0.05em" }}>OUT OF STOCK</span>
+              </div>
+            )}
+            {/* Price badge */}
+            <div style={{ position: "absolute", bottom: 16, left: 20 }}>
+              <span style={{ fontSize: 28, fontWeight: 900, color: "white", textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>${product.price.toFixed(2)}</span>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div style={{ padding: "24px 24px 32px" }}>
+            {/* Brand + name */}
+            <div style={{ fontSize: 10, color: T.gold, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 700, marginBottom: 6 }}>{product.brand}</div>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: T.cream, marginBottom: 10, lineHeight: 1.2, fontFamily: "'Playfair Display', serif" }}>{product.name}</h2>
+
+            {/* Rating */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 18 }}>
+              {[1,2,3,4,5].map(s => (
+                <Star key={s} size={14} fill={s <= Math.round(product.rating) ? T.gold : "none"} color={T.gold} />
+              ))}
+              <span style={{ color: T.gold, fontSize: 13, fontWeight: 700 }}>{product.rating}</span>
+              <span style={{ color: T.muted, fontSize: 12 }}>({product.reviews?.toLocaleString()} reviews)</span>
+            </div>
+
+            {/* Description */}
+            <p style={{ color: T.creamMid, fontSize: 15, lineHeight: 1.65, marginBottom: 20 }}>{product.description || "No description available."}</p>
+
+            {/* Tags */}
+            {product.tags?.length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 24 }}>
+                {product.tags.map(t => (
+                  <span key={t} style={{ fontSize: 11, background: T.bgCardAlt, color: T.creamMid, border: `1px solid ${T.borderMid}`, borderRadius: 20, padding: "4px 12px", fontWeight: 500 }}>{t}</span>
+                ))}
+              </div>
+            )}
+
+            {/* Fulfillment info */}
+            {product.fulfillmentType && (
+              <div style={{ background: T.bgCardAlt, border: `1px solid ${T.borderMid}`, borderRadius: 12, padding: "12px 16px", marginBottom: 24, display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: 18 }}>{product.fulfillmentType === "local" ? "🛵" : "📦"}</span>
+                <div>
+                  <div style={{ color: T.gold, fontSize: 12, fontWeight: 700 }}>{product.fulfillmentType === "local" ? "Local Delivery" : `Ships in ${product.shippingDays} days`}</div>
+                  <div style={{ color: T.muted, fontSize: 11 }}>{product.fulfillmentType === "local" ? "20–45 min delivery" : product.shippingFee === 0 ? "Free shipping" : `$${product.shippingFee} shipping`}</div>
+                </div>
+              </div>
+            )}
+
+            {/* CTA */}
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={handleAdd}
+              disabled={outOfStock}
+              style={{
+                width: "100%",
+                background: outOfStock ? T.bgCardAlt : added ? T.success : `linear-gradient(135deg,${T.gold},${T.goldDark})`,
+                color: outOfStock ? T.muted : "white",
+                border: "none", borderRadius: 14, padding: "16px 24px",
+                cursor: outOfStock ? "not-allowed" : "pointer",
+                fontWeight: 800, fontSize: 16,
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                boxShadow: (!outOfStock && !added) ? `0 0 24px ${T.goldGlow}` : "none",
+                transition: "all 0.2s",
+              }}>
+              {outOfStock ? "Out of Stock" : added ? <><CheckCircle size={18} /> Added to Cart</> : <><ShoppingCart size={18} /> Add to Cart — ${product.price.toFixed(2)}</>}
+            </motion.button>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+function ProductCard({ product, onAddToCart, inCart, onViewDetail }) {
+  const [added, setAdded] = useState(false);
+  const outOfStock = product.stock === 0;
+  const handleAdd = (e) => {
+    e.stopPropagation();
     if (outOfStock) return;
     onAddToCart();
     setAdded(true);
@@ -1186,6 +1307,7 @@ function ProductCard({ product, onAddToCart, inCart }) {
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -5, boxShadow: `0 16px 40px rgba(0,0,0,0.65), 0 0 0 1px ${T.borderGlow}` }}
       transition={{ type: "spring", stiffness: 320, damping: 24 }}
+      onClick={() => onViewDetail && onViewDetail(product)}
       style={{
         background: T.bgCard,
         border: `1px solid ${outOfStock ? T.error+"44" : T.borderMid}`,
@@ -1193,28 +1315,29 @@ function ProductCard({ product, onAddToCart, inCart }) {
         overflow: "hidden",
         opacity: outOfStock ? 0.72 : 1,
         boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+        cursor: "pointer",
       }}
     >
       {/* Cover */}
       <div style={{ height: 152, background: product.gradient, position: "relative" }}>
-        {/* Gradient overlay for depth */}
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.35) 100%)" }} />
-        {/* Wishlist */}
-        <button style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.45)", border: `1px solid rgba(255,255,255,0.1)`, backdropFilter: "blur(8px)", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.rose, zIndex: 2 }}>
+        <button onClick={e => { e.stopPropagation(); }} style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.45)", border: `1px solid rgba(255,255,255,0.1)`, backdropFilter: "blur(8px)", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.rose, zIndex: 2 }}>
           <Heart size={14} />
         </button>
-        {/* Out of stock overlay */}
         {outOfStock && (
           <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 3 }}>
             <span style={{ background: T.error, color: "white", fontWeight: 800, fontSize: 10, padding: "4px 10px", borderRadius: 6, letterSpacing: "0.05em" }}>OUT OF STOCK</span>
           </div>
         )}
-        {/* Low stock warning */}
         {product.stock !== undefined && product.stock > 0 && product.stock <= 5 && (
           <div style={{ position: "absolute", bottom: 10, left: 10, background: "rgba(239,68,68,0.85)", backdropFilter: "blur(6px)", color: "white", fontSize: 9, fontWeight: 800, padding: "3px 8px", borderRadius: 5, zIndex: 2 }}>
             Only {product.stock} left
           </div>
         )}
+        {/* View detail hint */}
+        <div style={{ position: "absolute", bottom: 10, right: 10, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)", border: `1px solid rgba(255,255,255,0.1)`, borderRadius: 6, padding: "3px 8px", fontSize: 9, color: "rgba(255,255,255,0.7)", fontWeight: 600, letterSpacing: "0.04em" }}>
+          TAP FOR DETAILS
+        </div>
       </div>
 
       {/* Body */}
@@ -1264,17 +1387,19 @@ function FulfillmentBadge({ type, shippingDays }) {
 }
 
 // Brand partner product card (ship / dropship)
-function BrandProductCard({ product, onAddToCart, inCart }) {
+function BrandProductCard({ product, onAddToCart, inCart, onViewDetail }) {
   const [hovered, setHovered] = useState(false);
   return (
     <div
       className="oshun-card"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClick={() => onViewDetail && onViewDetail(product)}
       style={{
         background: T.bgCard, border: `1px solid ${hovered ? T.borderGlow : T.borderMid}`,
         borderRadius: 18, overflow: "hidden", display: "flex", flexDirection: "column",
         boxShadow: hovered ? `0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px ${T.borderGlow}` : "0 2px 8px rgba(0,0,0,0.3)",
+        cursor: "pointer",
       }}>
       <div style={{ height: 132, background: product.gradient, position: "relative", display: "flex", alignItems: "flex-end", padding: "12px 14px" }}>
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.4) 100%)" }} />
@@ -1300,7 +1425,7 @@ function BrandProductCard({ product, onAddToCart, inCart }) {
               <span style={{ fontSize: 10, color: T.muted }}>({product.reviews})</span>
             </div>
           </div>
-          <button onClick={onAddToCart} style={{
+          <button onClick={e => { e.stopPropagation(); onAddToCart(); }} style={{
             background: inCart ? T.success : `linear-gradient(135deg,${T.gold},${T.goldDark})`,
             border: "none", borderRadius: 10, padding: "9px 15px", cursor: "pointer",
             color: inCart ? "white" : "#ffffff", fontWeight: 700, fontSize: 12,
@@ -1443,6 +1568,7 @@ function SearchResultsPage({ query, cart, setCart, setPage, setSelectedBusiness,
 function ShopPage({ cart, setCart, setSelectedBrand, setPage, initialCategory, products = PRODUCTS, brandProducts = BRAND_PRODUCTS }) {
   const [activeCat,  setActiveCat]  = useState(initialCategory || "all");
   const [activeMode, setActiveMode] = useState("all");
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const { isMobile, isTablet } = useBreakpoint();
 
   const localFiltered  = activeCat === "all" ? products       : products.filter(p => p.category === activeCat);
@@ -1460,6 +1586,14 @@ function ShopPage({ cart, setCart, setSelectedBrand, setPage, initialCategory, p
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "24px 16px" : "36px 24px" }}>
+      {selectedProduct && (
+        <ProductDetailModal
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onAddToCart={() => addToCart(selectedProduct)}
+          inCart={cart.some(i => i.id === selectedProduct.id)}
+        />
+      )}
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: isMobile ? 26 : 34, fontWeight: 400, color: T.cream, marginBottom: 2, letterSpacing: "-0.01em", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>Ẹ̀bùn Wa</h1>
@@ -1514,7 +1648,7 @@ function ShopPage({ cart, setCart, setSelectedBrand, setPage, initialCategory, p
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2,1fr)" : isTablet ? "repeat(3,1fr)" : "repeat(4,1fr)", gap: 16 }}>
             {localFiltered.map((p, i) => (
               <motion.div key={p.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04, duration: 0.3 }}>
-                <ProductCard product={p} onAddToCart={() => addToCart(p)} inCart={cart.some(i => i.id === p.id)} />
+                <ProductCard product={p} onAddToCart={() => addToCart(p)} inCart={cart.some(i => i.id === p.id)} onViewDetail={setSelectedProduct} />
               </motion.div>
             ))}
           </div>
@@ -1537,7 +1671,7 @@ function ShopPage({ cart, setCart, setSelectedBrand, setPage, initialCategory, p
           )}
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2,1fr)" : isTablet ? "repeat(3,1fr)" : "repeat(4,1fr)", gap: 16 }}>
             {brandFiltered.map(p => (
-              <BrandProductCard key={p.id} product={p} onAddToCart={() => addToCart(p)} inCart={cart.some(i => i.id === p.id)} />
+              <BrandProductCard key={p.id} product={p} onAddToCart={() => addToCart(p)} inCart={cart.some(i => i.id === p.id)} onViewDetail={setSelectedProduct} />
             ))}
           </div>
         </div>
