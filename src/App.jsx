@@ -1462,7 +1462,8 @@ function ShopPage({ cart, setCart, setSelectedBrand, setPage, initialCategory, p
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "24px 16px" : "36px 24px" }}>
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: isMobile ? 24 : 30, fontWeight: 900, color: T.cream, marginBottom: 4, letterSpacing: "-0.02em" }}>Shop Beauty</h1>
+        <h1 style={{ fontSize: isMobile ? 26 : 34, fontWeight: 400, color: T.cream, marginBottom: 2, letterSpacing: "-0.01em", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>Ẹ̀bùn Wa</h1>
+        <p style={{ color: T.gold, fontSize: isMobile ? 11 : 12, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 4 }}>Our Collection</p>
         <p style={{ color: T.creamMid, fontSize: 14 }}>Local on-demand delivery & national brand partners — in one place</p>
       </div>
 
@@ -1500,9 +1501,14 @@ function ShopPage({ cart, setCart, setSelectedBrand, setPage, initialCategory, p
       {showLocal && localFiltered.length > 0 && (
         <div style={{ marginBottom: 40 }}>
           {activeMode === "all" && (
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-              <h2 style={{ fontSize: 18, fontWeight: 800, color: T.cream, margin: 0 }}>🛵 Local Delivery</h2>
-              <span style={{ fontSize: 12, color: T.gold, background: T.purpleDeep, border: `1px solid ${T.purple}33`, borderRadius: 6, padding: "2px 9px", fontWeight: 600 }}>20–45 min</span>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18, flexWrap: "wrap", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <h2 style={{ fontSize: 18, fontWeight: 800, color: T.cream, margin: 0 }}>🛵 Local Delivery</h2>
+                <span style={{ fontSize: 12, color: T.gold, background: T.purpleDeep, border: `1px solid ${T.purple}33`, borderRadius: 6, padding: "2px 9px", fontWeight: 600 }}>20–45 min</span>
+              </div>
+              <button onClick={() => setPage("services")} style={{ background: "none", border: "none", color: T.gold, cursor: "pointer", fontSize: 13, fontWeight: 700, letterSpacing: "0.02em" }}>
+                All local shops →
+              </button>
             </div>
           )}
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2,1fr)" : isTablet ? "repeat(3,1fr)" : "repeat(4,1fr)", gap: 16 }}>
