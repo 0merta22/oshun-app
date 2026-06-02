@@ -6636,19 +6636,107 @@ const FEED_CATS = [
 ];
 
 // ── Post Composer Modal ───────────────────────────────────────
+// SEO hashtags auto-added per category
+const CATEGORY_SEO = {
+  hair:     ["naturalhair","haircare","blackhair","texturedhair","hairstyle"],
+  skin:     ["skincare","melanin","glowingskin","blackskincare","skinroutine"],
+  nails:    ["nails","nailart","blackgirlnails","nailinspo","mani"],
+  makeup:   ["makeup","blackbeauty","makeuplook","glam","beautylovers"],
+  wellness: ["wellness","selfcare","blackwellness","holistichealth","mindandbody"],
+};
+
+// Contextual fields per post type
+const POST_TYPE_CONFIG = {
+  look: {
+    label: "✨ Look",
+    placeholder: "Describe your look — products, technique, occasion...",
+    fields: [
+      { key: "occasion", label: "Occasion", placeholder: "e.g. Date night, work, wedding..." },
+      { key: "products_used", label: "Products Used", placeholder: "e.g. Pattern Curl Gel, Eco Styler..." },
+    ],
+  },
+  tutorial: {
+    label: "📖 Tutorial",
+    placeholder: "Walk us through the steps...",
+    fields: [
+      { key: "difficulty", label: "Difficulty", type: "select", options: ["Beginner", "Intermediate", "Advanced"] },
+      { key: "time_needed", label: "Time Needed", placeholder: "e.g. 30 mins, 2 hours..." },
+    ],
+  },
+  review: {
+    label: "⭐ Review",
+    placeholder: "Share your honest experience...",
+    fields: [
+      { key: "city", label: "City", placeholder: "e.g. Washington, DC" },
+      { key: "salon", label: "Salon / Business", placeholder: "e.g. Crown & Glory Beauty" },
+      { key: "tech", label: "Stylist / Tech", placeholder: "e.g. Jasmine M." },
+      { key: "service", label: "Service", placeholder: "e.g. Silk Press, Box Braids, Full Set..." },
+    ],
+  },
+  inspiration: {
+    label: "💫 Inspiration",
+    placeholder: "What inspired you? Share the vision...",
+    fields: [
+      { key: "vibe", label: "Vibe / Mood", placeholder: "e.g. Soft life, Afrofuturism, Old money..." },
+      { key: "source", label: "Inspo Source", placeholder: "e.g. Pinterest, a film, a person..." },
+    ],
+  },
+};
+
 function PostComposer({ user, onClose, onPosted }) {
-  const [caption, setCaption]   = useState("");
-  const [category, setCategory] = useState("hair");
-  const [postType, setPostType] = useState("look");
-  const [tags, setTags]         = useState("");
-  const [loading, setLoading]   = useState(false);
+  const [caption,    setCaption]    = useState("");
+  const [category,   setCategory]   = useState("hair");
+  const [postType,   setPostType]   = useState("look");
+  const [extraFields, setExtraFields] = useState({});
+  const [imagePreview, setImagePreview] = useState(null);
+  const [loading,    setLoading]    = useState(false);
+  const fileRef = useRef(null);
+  const { isMobile } = useBreakpoint();
+
+  const typeConfig = POST_TYPE_CONFIG[postType];
+  const seoTags = CATEGORY_SEO[category] || [];
+
+  const handleCategorySelect = (catId) => {
+    setCategory(catId);
+  };
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreview(ev.target.result);
+    reader.readAsDataURL(file);
+  };
 
   const handlePost = async () => {
     if (!caption.trim()) return;
     setLoading(true);
     try {
-      const hashtags = (caption.match(/#\w+/g) || []).map(t => t.replace('#', '').toLowerCase());
-      await createCommunityPost({ post_type: postType, caption, media_urls: [], media_types: [], product_tags: [], service_tags: [], hashtags, category });
+      // Merge caption hashtags + auto SEO tags
+      const captionTags = (caption.match(/#\w+/g) || []).map(t => t.replace('#','').toLowerCase());
+      const allHashtags = [...new Set([...captionTags, ...seoTags])];
+
+      // Build full caption with contextual fields appended
+      let fullCaption = caption;
+      const cfg = POST_TYPE_CONFIG[postType];
+      if (cfg?.fields) {
+        const extras = cfg.fields
+          .filter(f => extraFields[f.key]?.trim())
+          .map(f => `${f.label}: ${extraFields[f.key]}`)
+          .join(" · ");
+        if (extras) fullCaption = `${caption}\n\n${extras}`;
+      }
+
+      await createCommunityPost({
+        post_type: postType,
+        caption: fullCaption,
+        media_urls: imagePreview ? [imagePreview] : [],
+        media_types: imagePreview ? ["image"] : [],
+        product_tags: [],
+        service_tags: [],
+        hashtags: allHashtags,
+        category,
+      });
       toast.success("Posted to the community! ✨");
       onPosted();
       onClose();
@@ -6662,62 +6750,124 @@ function PostComposer({ user, onClose, onPosted }) {
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      style={{ position: "fixed", inset: 0, background: "rgba(6,15,32,0.85)", zIndex: 600, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+      style={{ position: "fixed", inset: 0, background: "rgba(6,15,32,0.85)", backdropFilter: "blur(6px)", zIndex: 600, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
       onClick={onClose}
     >
       <motion.div
         initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 80, opacity: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         onClick={e => e.stopPropagation()}
-        style={{ background: T.bgCard, borderRadius: "24px 24px 0 0", padding: 24, width: "100%", maxWidth: 600, border: `1px solid ${T.border}` }}
+        style={{ background: T.bgCard, borderRadius: "24px 24px 0 0", padding: 24, width: "100%", maxWidth: 600, border: `1px solid ${T.borderGlow}`, maxHeight: "90vh", overflowY: "auto" }}
       >
+        {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
           <span style={{ fontFamily: '"Playfair Display", serif', fontSize: 18, fontWeight: 700, color: T.cream }}>New Post</span>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted }}><X size={20} /></button>
         </div>
 
-        {/* Post type */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 14, overflowX: "auto" }} className="oshun-hscroll">
-          {["look","tutorial","review","inspiration"].map(t => (
-            <button key={t} onClick={() => setPostType(t)} style={{
-              padding: "6px 14px", borderRadius: 20, border: `1px solid ${postType === t ? T.gold : T.border}`,
-              background: postType === t ? `rgba(200,168,75,0.12)` : "transparent",
-              color: postType === t ? T.gold : T.muted, fontSize: 12, fontWeight: 600,
-              textTransform: "capitalize", flexShrink: 0, cursor: "pointer",
-            }}>{t}</button>
+        {/* Post type — contextual */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 18, overflowX: "auto" }} className="oshun-hscroll">
+          {Object.entries(POST_TYPE_CONFIG).map(([key, cfg]) => (
+            <button key={key} onClick={() => { setPostType(key); setExtraFields({}); }} style={{
+              padding: "7px 16px", borderRadius: 20, border: `1px solid ${postType === key ? T.gold : T.borderMid}`,
+              background: postType === key ? `rgba(200,168,75,0.15)` : "transparent",
+              color: postType === key ? T.gold : T.muted, fontSize: 12, fontWeight: 600,
+              flexShrink: 0, cursor: "pointer", transition: "all 0.15s",
+            }}>{cfg.label}</button>
           ))}
         </div>
 
         {/* Caption */}
         <textarea
           value={caption} onChange={e => setCaption(e.target.value)}
-          placeholder="Share your look, tip, or review... #hair #naturalhair"
+          placeholder={typeConfig.placeholder}
           style={{
-            width: "100%", minHeight: 100, background: T.bgCardAlt, border: `1px solid ${T.border}`,
+            width: "100%", minHeight: 90, background: T.bgCardAlt, border: `1px solid ${T.borderMid}`,
             borderRadius: 12, padding: 14, color: T.cream, fontSize: 14, resize: "none",
-            fontFamily: '"Jost", sans-serif', outline: "none",
+            fontFamily: '"Jost", sans-serif', outline: "none", boxSizing: "border-box",
           }}
         />
 
-        {/* Category */}
-        <div style={{ display: "flex", gap: 8, marginTop: 12, overflowX: "auto" }} className="oshun-hscroll">
-          {FEED_CATS.filter(c => c.id !== "all").map(c => (
-            <button key={c.id} onClick={() => setCategory(c.id)} style={{
-              padding: "5px 12px", borderRadius: 20, border: `1px solid ${category === c.id ? T.seafoam : T.border}`,
-              background: category === c.id ? `rgba(74,171,191,0.12)` : "transparent",
-              color: category === c.id ? T.seafoam : T.muted, fontSize: 12, fontWeight: 500,
-              flexShrink: 0, cursor: "pointer",
-            }}>{c.label}</button>
-          ))}
+        {/* Contextual extra fields */}
+        {typeConfig.fields?.length > 0 && (
+          <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ fontSize: 11, color: T.gold, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+              {postType === "review" ? "Review Details" : postType === "tutorial" ? "Tutorial Info" : postType === "look" ? "Look Details" : "Inspiration"}
+            </div>
+            {typeConfig.fields.map(f => (
+              <div key={f.key}>
+                <div style={{ fontSize: 11, color: T.muted, marginBottom: 4 }}>{f.label}</div>
+                {f.type === "select" ? (
+                  <select
+                    value={extraFields[f.key] || ""}
+                    onChange={e => setExtraFields(prev => ({ ...prev, [f.key]: e.target.value }))}
+                    style={{ width: "100%", background: T.bgCardAlt, border: `1px solid ${T.borderMid}`, borderRadius: 10, padding: "9px 12px", color: T.cream, fontSize: 13, outline: "none" }}
+                  >
+                    <option value="">Select...</option>
+                    {f.options.map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    placeholder={f.placeholder}
+                    value={extraFields[f.key] || ""}
+                    onChange={e => setExtraFields(prev => ({ ...prev, [f.key]: e.target.value }))}
+                    style={{ width: "100%", background: T.bgCardAlt, border: `1px solid ${T.borderMid}`, borderRadius: 10, padding: "9px 12px", color: T.cream, fontSize: 13, outline: "none", boxSizing: "border-box" }}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Category + SEO tags */}
+        <div style={{ marginTop: 16 }}>
+          <div style={{ fontSize: 11, color: T.muted, marginBottom: 8 }}>Category <span style={{ color: T.seafoam }}>(auto-adds SEO tags)</span></div>
+          <div style={{ display: "flex", gap: 8, overflowX: "auto" }} className="oshun-hscroll">
+            {FEED_CATS.filter(c => c.id !== "all").map(c => (
+              <button key={c.id} onClick={() => handleCategorySelect(c.id)} style={{
+                padding: "5px 12px", borderRadius: 20, border: `1px solid ${category === c.id ? T.seafoam : T.borderMid}`,
+                background: category === c.id ? `rgba(74,171,191,0.15)` : "transparent",
+                color: category === c.id ? T.seafoam : T.muted, fontSize: 12, fontWeight: 500,
+                flexShrink: 0, cursor: "pointer", transition: "all 0.15s",
+              }}>{c.label}</button>
+            ))}
+          </div>
+          {/* Show auto SEO tags */}
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
+            {seoTags.map(tag => (
+              <span key={tag} style={{ fontSize: 11, color: T.seafoam, background: `rgba(74,171,191,0.08)`, border: `1px solid rgba(74,171,191,0.2)`, borderRadius: 20, padding: "2px 10px", fontWeight: 500 }}>#{tag}</span>
+            ))}
+          </div>
         </div>
 
+        {/* Image upload */}
+        <div style={{ marginTop: 16 }}>
+          <input ref={fileRef} type="file" accept="image/*" onChange={handleImageSelect} style={{ display: "none" }} />
+          {imagePreview ? (
+            <div style={{ position: "relative", borderRadius: 12, overflow: "hidden", marginBottom: 4 }}>
+              <img src={imagePreview} alt="Preview" style={{ width: "100%", maxHeight: 220, objectFit: "cover", borderRadius: 12 }} />
+              <button onClick={() => setImagePreview(null)} style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.6)", border: "none", borderRadius: "50%", width: 28, height: 28, cursor: "pointer", color: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <X size={14} />
+              </button>
+            </div>
+          ) : (
+            <button onClick={() => fileRef.current?.click()} style={{ width: "100%", padding: "12px", background: T.bgCardAlt, border: `1.5px dashed ${T.borderMid}`, borderRadius: 12, color: T.muted, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 13, fontWeight: 500 }}>
+              <Camera size={16} /> Add a photo
+            </button>
+          )}
+        </div>
+
+        {/* Post button */}
         <motion.button
           whileTap={{ scale: 0.97 }} onClick={handlePost} disabled={loading || !caption.trim()}
           style={{
             marginTop: 18, width: "100%", padding: "14px 0", borderRadius: 14,
-            background: `linear-gradient(135deg, ${T.gold}, ${T.goldDark})`,
-            border: "none", color: T.bg, fontWeight: 700, fontSize: 15,
-            fontFamily: '"Jost", sans-serif', cursor: "pointer", opacity: loading ? 0.6 : 1,
+            background: caption.trim() ? `linear-gradient(135deg, ${T.gold}, ${T.goldDark})` : T.bgCardAlt,
+            border: "none", color: caption.trim() ? T.bg : T.muted, fontWeight: 700, fontSize: 15,
+            fontFamily: '"Jost", sans-serif', cursor: caption.trim() ? "pointer" : "not-allowed",
+            opacity: loading ? 0.6 : 1, transition: "all 0.2s",
+            boxShadow: caption.trim() ? `0 0 20px ${T.goldGlow}` : "none",
           }}
         >{loading ? "Posting…" : "Post to Community"}</motion.button>
       </motion.div>
