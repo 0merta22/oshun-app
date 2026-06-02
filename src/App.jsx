@@ -13,6 +13,7 @@ import {
   cancelSubscription, reactivateSubscription, getStripeBillingPortal,
   sendConciergeMessage,
   fetchNews,
+  loginUser, registerUser,
 } from './api';
 
 // ─────────────────────────────────────────────────────────────
@@ -5926,15 +5927,32 @@ function AuthModal({ onClose, setUser, setPage }) {
   const [accountType, setAccountType] = useState("consumer");
   const [form,        setForm]        = useState({ name: "", email: "", password: "", businessName: "" });
   const [showPass,    setShowPass]    = useState(false);
+  const [loading,     setLoading]     = useState(false);
+  const [authError,   setAuthError]   = useState("");
 
-  const submit = () => {
-    setUser({ name: form.name || form.email.split("@")[0] || "User", email: form.email, type: accountType, businessName: accountType === "business" ? form.businessName : null });
-    onClose();
-    // Auto-route each user type to their home view after login
-    if (accountType === "business") setPage("dashboard");
-    else if (accountType === "brand")    setPage("branddashboard");
-    else if (accountType === "driver")   setPage("driver");
-    // consumers stay on home
+  const submit = async () => {
+    setAuthError("");
+    if (!form.email || !form.password) { setAuthError("Email and password are required."); return; }
+    setLoading(true);
+    try {
+      let data;
+      if (mode === "login") {
+        data = await loginUser({ email: form.email, password: form.password });
+      } else {
+        if (!form.name) { setAuthError("Name is required."); setLoading(false); return; }
+        data = await registerUser({ name: form.name, email: form.email, password: form.password, type: accountType });
+      }
+      localStorage.setItem('oshun_token', data.token);
+      setUser({ id: data.user.id, name: data.user.name, email: data.user.email, type: data.user.type });
+      onClose();
+      if (data.user.type === "business") setPage("dashboard");
+      else if (data.user.type === "brand")  setPage("branddashboard");
+      else if (data.user.type === "driver") setPage("driver");
+    } catch (err) {
+      setAuthError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -6003,7 +6021,14 @@ function AuthModal({ onClose, setUser, setPage }) {
           </div>
         </div>
 
-        <Btn onClick={submit} style={{ width: "100%", padding: "14px", fontSize: 15 }}>{mode === "login" ? "Sign In" : "Create Account"}</Btn>
+        {authError && (
+          <div style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 10, padding: "10px 14px", marginBottom: 14, color: "#F87171", fontSize: 13 }}>
+            {authError}
+          </div>
+        )}
+        <Btn onClick={submit} disabled={loading} style={{ width: "100%", padding: "14px", fontSize: 15, opacity: loading ? 0.7 : 1 }}>
+          {loading ? "Please wait…" : mode === "login" ? "Sign In" : "Create Account"}
+        </Btn>
       </div>
     </div>
   );
@@ -8182,7 +8207,7 @@ export default function App() {
           },
         }}
       />
-      <Navbar page={page} setPage={setPage} cart={cart} user={user} onAuthOpen={() => setAuthOpen(true)} activeOrder={isOrderActive ? activeOrder : null} onTabChange={handleTabChange} onSignOut={() => { setUser(null); setPage("home"); toast.success("Signed out"); }} />
+      <Navbar page={page} setPage={setPage} cart={cart} user={user} onAuthOpen={() => setAuthOpen(true)} activeOrder={isOrderActive ? activeOrder : null} onTabChange={handleTabChange} onSignOut={() => { localStorage.removeItem('oshun_token'); setUser(null); setPage("home"); toast.success("Signed out"); }} />
 
       <TrialBanner sub={subscription} onManage={() => setPage('oshun-plus')} />
 
