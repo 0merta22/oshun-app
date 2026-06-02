@@ -242,6 +242,10 @@ const SERVICES = [
   { id: 9, businessId: 5, name: "Fade & Line-Up",        category: "barber",   price: 35,  duration: "45 min",  rating: 4.9, reviews: 412, gradient: "linear-gradient(135deg,#B8860B,#007A75)", description: "Clean taper fade with precision line-up and edge work.",                 provider: "Kings Cut Barbershop",  providerAvatar: "KC" },
   { id: 10, businessId: 5, name: "Beard Shape & Trim",   category: "barber",   price: 25,  duration: "30 min",  rating: 4.8, reviews: 298, gradient: "linear-gradient(135deg,#007A75,#B8860B)", description: "Full beard shaping, trim, and hot towel treatment.",                    provider: "Kings Cut Barbershop",  providerAvatar: "KC" },
   { id: 11, businessId: 5, name: "Skin Taper + Design",  category: "barber",   price: 55,  duration: "1 hr",    rating: 5.0, reviews: 187, gradient: "linear-gradient(135deg,#1A1A1A,#B8860B)", description: "Skin-level taper with custom design cut into the fade.",                 provider: "Kings Cut Barbershop",  providerAvatar: "KC" },
+  { id: 12, businessId: 6, name: "Custom Tattoo Design", category: "tattoo",   price: 150, duration: "2-3 hrs", rating: 5.0, reviews: 94,  gradient: "linear-gradient(135deg,#1A0A2E,#4A1A6B)", description: "Original custom artwork — fine line, blackwork, or Afrocentric designs. Consultation included.", provider: "Melanated Ink Studio",  providerAvatar: "MI" },
+  { id: 13, businessId: 6, name: "Touch-Up Session",     category: "tattoo",   price: 80,  duration: "1 hr",    rating: 4.9, reviews: 61,  gradient: "linear-gradient(135deg,#2A1A4E,#6B2A8B)", description: "Refresh and restore existing tattoos. Color packing, line work corrections, and shading.",   provider: "Melanated Ink Studio",  providerAvatar: "MI" },
+  { id: 14, businessId: 6, name: "Flash Tattoo",         category: "tattoo",   price: 60,  duration: "45 min",  rating: 4.8, reviews: 138, gradient: "linear-gradient(135deg,#0A1A3E,#1A4A8B)", description: "Pre-designed flash pieces — perfect for your first tattoo or a quick add-on.",              provider: "Melanated Ink Studio",  providerAvatar: "MI" },
+  { id: 15, businessId: 6, name: "Consultation",         category: "tattoo",   price: 0,   duration: "30 min",  rating: 5.0, reviews: 210, gradient: "linear-gradient(135deg,#1A2A1A,#2A5A3A)", description: "Free 30-min consultation to discuss placement, sizing, and concept for your custom piece.",  provider: "Melanated Ink Studio",  providerAvatar: "MI" },
 ];
 
 const REVIEWS = {
@@ -279,6 +283,7 @@ const BUSINESSES = [
   { id: 5, name: "Kings Cut Barbershop",    tagline: "Precision cuts for kings",          category: "Barber & Grooming",      rating: 4.9, reviews: 512, deliveryTime: "Studio Only",deliveryFee: 0,    gradient: "linear-gradient(135deg,#B8860B 0%,#007A75 100%)",  tags: ["Barber","Fade","Grooming"],             location: "Shaw, DC",             initials: "KC", description: "Premier Black-owned barbershop serving DC with precision fades, beard work, and skin tapers." },
   { id: 5, name: "Kings Cut Barbershop",    tagline: "Precision cuts for kings",          category: "Barber & Grooming",      rating: 4.9, reviews: 512, deliveryTime: "Studio Only", deliveryFee: 0,    gradient: "linear-gradient(135deg,#B8860B 0%,#007A75 100%)",  tags: ["Barber","Fade","Grooming"],            location: "Shaw, DC",             initials: "KC", description: "Premier Black-owned barbershop serving DC with precision fades, beard work, and skin tapers." },
   { id: 4, name: "Polished By Design",     tagline: "Precision in every stroke",         category: "Nails & Styling",        rating: 4.9, reviews: 634, deliveryTime: "Studio Only",deliveryFee: 0,    gradient: "linear-gradient(135deg,#E07B54 0%,#D4AF37 100%)",  tags: ["Nails","Braids","Styling"],             location: "Petworth, DC",         initials: "PD", description: "Expert nail art and braiding services from a team of certified beauty professionals." },
+  { id: 6, name: "Melanated Ink Studio",  tagline: "Art rooted in culture, worn on skin", category: "Tattoo & Body Art",      rating: 5.0, reviews: 210, deliveryTime: "Studio Only",deliveryFee: 0,    gradient: "linear-gradient(135deg,#1A0A2E 0%,#4A1A6B 100%)",  tags: ["Tattoo","Custom Art","Afrocentric"],    location: "H Street, DC",         initials: "MI", description: "Black-owned tattoo studio specializing in fine line, blackwork, and Afrocentric designs. Every piece is a conversation." },
 ];
 
 const PROMO_BANNERS = [
@@ -1738,7 +1743,7 @@ function ServicesPage({ setPage, setSelectedService, services = SERVICES }) {
 
       {/* Category chips */}
       <div className="oshun-hscroll" style={{ display: "flex", gap: 8, marginBottom: 32, overflowX: "auto", paddingBottom: 4 }}>
-        {[{ id: "all", label: "✦ All Services" }, { id: "hair", label: "✂️ Hair" }, { id: "barber", label: "💈 Barber" }, { id: "skincare", label: "✨ Skincare" }, { id: "nails", label: "💅 Nails" }].map(f => (
+        {[{ id: "all", label: "✦ All Services" }, { id: "hair", label: "✂️ Hair" }, { id: "barber", label: "💈 Barber" }, { id: "skincare", label: "✨ Skincare" }, { id: "nails", label: "💅 Nails" }, { id: "tattoo", label: "🖤 Tattoo" }].map(f => (
           <button key={f.id} onClick={() => setActiveCat(f.id)} style={{
             background: activeCat === f.id ? `linear-gradient(135deg,${T.purple},${T.purpleDark})` : T.glass,
             backdropFilter: "blur(10px)",
@@ -1750,6 +1755,20 @@ function ServicesPage({ setPage, setSelectedService, services = SERVICES }) {
           }}>{f.label}</button>
         ))}
       </div>
+
+      {/* Tattoo artist callout */}
+      {activeCat === "tattoo" && (
+        <div style={{ background: `linear-gradient(135deg,#1A0A2E,#0A0A1A)`, border: `1.5px solid #4A1A6B55`, borderRadius: 18, padding: "20px 24px", marginBottom: 28, display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+          <div style={{ fontSize: 32 }}>🖤</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 800, color: T.cream, fontSize: 15, marginBottom: 4 }}>Are you a tattoo artist?</div>
+            <div style={{ color: T.creamMid, fontSize: 13, lineHeight: 1.5 }}>Oshun Desk is built for you — manage bookings, showcase your portfolio, and reach the Oshun community. Launching soon.</div>
+          </div>
+          <button style={{ background: `linear-gradient(135deg,#4A1A6B,#6B2A8B)`, border: "none", borderRadius: 10, padding: "10px 20px", color: "white", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 0 16px rgba(74,26,107,0.5)" }}>
+            Join the Waitlist
+          </button>
+        </div>
+      )}
 
       {/* Service cards */}
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : isTablet ? "repeat(2,1fr)" : "repeat(3,1fr)", gap: 20 }}>
