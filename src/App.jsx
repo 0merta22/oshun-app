@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast, Toaster } from "sonner";
+import { TextInput, PasswordInput } from "@mantine/core";
 import {
   fetchProducts, fetchBusinesses, fetchServices, fetchBrandPartners,
   getFeed, likePost, unlikePost, savePost, unsavePost,
@@ -463,21 +464,38 @@ function Navbar({ page, setPage, cart, user, onAuthOpen, activeOrder, onTabChang
 
         {/* Desktop nav links */}
         {!isMobile && (
-          <div style={{ display: "flex", gap: 2, flex: 1 }}>
-            {allLinks.map(({ id, tab, label, Icon }) => (
-              <button key={label} onClick={() => { setPage(id); if (tab && onTabChange) onTabChange(id, tab); }} style={{
-                background: page === id ? `rgba(200,168,75,0.15)` : "rgba(255,255,255,0.04)",
-                color: page === id ? T.gold : T.creamMid,
-                border: page === id ? `1px solid rgba(200,168,75,0.45)` : `1px solid rgba(255,255,255,0.08)`,
-                borderRadius: 9, padding: "7px 13px", cursor: "pointer",
-                fontWeight: page === id ? 600 : 400, fontSize: 13,
-                fontFamily: '"Jost", sans-serif',
-                display: "flex", alignItems: "center", gap: 5,
-                transition: "all 0.18s",
-              }}>
-                <Icon size={13} /> {label}
-              </button>
-            ))}
+          <div style={{ display: "flex", gap: 0, flex: 1, height: 58, alignItems: "stretch" }}>
+            {allLinks.map(({ id, tab, label, Icon }) => {
+              const isActive = page === id;
+              return (
+                <button key={label} onClick={() => { setPage(id); if (tab && onTabChange) onTabChange(id, tab); }} style={{
+                  background: "transparent",
+                  color: isActive ? T.gold : T.creamMid,
+                  border: "none",
+                  borderBottom: isActive ? `2px solid ${T.gold}` : "2px solid transparent",
+                  padding: "0 14px",
+                  cursor: "pointer",
+                  fontWeight: isActive ? 700 : 400,
+                  fontSize: 13,
+                  fontFamily: '"Jost", sans-serif',
+                  display: "flex", alignItems: "center", gap: 5,
+                  transition: "color 0.18s, border-color 0.18s",
+                  letterSpacing: "0.01em",
+                  position: "relative",
+                  boxShadow: isActive ? `inset 0 -1px 0 ${T.gold}` : "none",
+                }}>
+                  <Icon size={13} />
+                  {label}
+                  {isActive && (
+                    <motion.div
+                      layoutId="nav-indicator"
+                      style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,${T.gold},${T.seafoam})`, borderRadius: "2px 2px 0 0" }}
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -684,26 +702,68 @@ function HomeBannerCarousel({ setPage }) {
   const b = PROMO_BANNERS[idx];
 
   return (
-    <div style={{ position:"relative", margin:"12px 16px", borderRadius:18, overflow:"hidden", height:170, background:b.gradient }}>
-      <div style={{ position:"absolute", top:14, left:14, background:"rgba(0,0,0,0.35)", color:"#fff", fontSize:9, fontWeight:800, letterSpacing:1.5, padding:"4px 10px", borderRadius:20, backdropFilter:"blur(8px)" }}>
-        {b.badge}
+    <div style={{ position:"relative", margin:"16px 16px 0", borderRadius:22, overflow:"hidden", height:190, boxShadow:"0 8px 32px rgba(0,0,0,0.5)" }}>
+      {/* Background gradient with transition */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={idx}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.35 }}
+          style={{ position:"absolute", inset:0, background:b.gradient }}
+        />
+      </AnimatePresence>
+
+      {/* Decorative pattern overlay */}
+      <div style={{ position:"absolute", inset:0, backgroundImage:"radial-gradient(circle at 80% 20%, rgba(255,255,255,0.06) 0%, transparent 50%)", pointerEvents:"none" }} />
+
+      {/* Content */}
+      <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", justifyContent:"space-between", padding:"16px 18px 16px" }}>
+        {/* Top row */}
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+          <div style={{ background:"rgba(0,0,0,0.35)", backdropFilter:"blur(10px)", border:"1px solid rgba(255,255,255,0.15)", color:"#fff", fontSize:9, fontWeight:800, letterSpacing:"0.1em", padding:"4px 11px", borderRadius:20 }}>
+            {b.badge}
+          </div>
+          {/* Nav arrows */}
+          <div style={{ display:"flex", gap:6 }}>
+            {[-1,1].map(dir => (
+              <button key={dir} onClick={() => go(dir)} style={{ background:"rgba(0,0,0,0.3)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:"50%", width:28, height:28, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#fff" }}>
+                {dir === -1 ? <ChevronLeft size={13} /> : <ChevronRight size={13} />}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom content */}
+        <div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={idx}
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -10, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+            >
+              <div style={{ fontFamily:"'Playfair Display', serif", color:"#fff", fontWeight:400, fontSize:22, lineHeight:1.25, marginBottom:5, letterSpacing:"-0.01em" }}>{b.headline}</div>
+              <div style={{ color:"rgba(255,255,255,0.78)", fontSize:12, marginBottom:14, lineHeight:1.5 }}>{b.sub}</div>
+              <motion.button
+                whileTap={{ scale:0.96 }}
+                onClick={() => setPage(b.page)}
+                style={{ background:"rgba(255,255,255,0.18)", border:"1.5px solid rgba(255,255,255,0.55)", backdropFilter:"blur(8px)", color:"#fff", fontWeight:800, fontSize:12, padding:"8px 20px", borderRadius:22, cursor:"pointer", letterSpacing:"0.02em" }}>
+                {b.cta} →
+              </motion.button>
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
-      <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"0 18px 18px", background:"linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 100%)" }}>
-        <div style={{ color:"#fff", fontWeight:900, fontSize:18, lineHeight:1.2, marginBottom:5 }}>{b.headline}</div>
-        <div style={{ color:"rgba(255,255,255,0.82)", fontSize:12, marginBottom:12 }}>{b.sub}</div>
-        <button onClick={() => setPage(b.page)} style={{ background:"rgba(255,255,255,0.2)", border:"1.5px solid rgba(255,255,255,0.6)", backdropFilter:"blur(8px)", color:"#fff", fontWeight:700, fontSize:12, padding:"7px 16px", borderRadius:20, cursor:"pointer" }}>
-          {b.cta} →
-        </button>
-      </div>
-      <button onClick={() => go(-1)} style={{ position:"absolute", left:8, top:"50%", transform:"translateY(-50%)", background:"rgba(0,0,0,0.35)", border:"none", borderRadius:"50%", width:28, height:28, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#fff" }}>
-        <ChevronLeft size={14} />
-      </button>
-      <button onClick={() => go(1)} style={{ position:"absolute", right:8, top:"50%", transform:"translateY(-50%)", background:"rgba(0,0,0,0.35)", border:"none", borderRadius:"50%", width:28, height:28, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#fff" }}>
-        <ChevronRight size={14} />
-      </button>
-      <div style={{ position:"absolute", bottom:10, right:14, display:"flex", gap:5 }}>
+
+      {/* Dot indicators */}
+      <div style={{ position:"absolute", bottom:14, right:16, display:"flex", gap:5, alignItems:"center" }}>
         {PROMO_BANNERS.map((_, i) => (
-          <div key={i} onClick={() => { clearInterval(timerRef.current); setIdx(i); start(); }} style={{ width: i===idx ? 18 : 6, height:6, borderRadius:3, background: i===idx ? "#fff" : "rgba(255,255,255,0.45)", cursor:"pointer", transition:"width 0.3s" }} />
+          <div key={i} onClick={() => { clearInterval(timerRef.current); setIdx(i); start(); }}
+            style={{ width: i===idx ? 20 : 6, height:6, borderRadius:3, background: i===idx ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.35)", cursor:"pointer", transition:"width 0.3s, background 0.3s", boxShadow: i===idx ? "0 0 6px rgba(255,255,255,0.4)" : "none" }}
+          />
         ))}
       </div>
     </div>
@@ -718,43 +778,52 @@ function BusinessCard({ biz, onClick }) {
     <motion.button
       onClick={onClick}
       className="oshun-card"
-      whileHover={{ y: -6, boxShadow: `0 16px 40px rgba(0,0,0,0.7), 0 0 0 1px ${T.borderGlow}` }}
+      whileHover={{ y: -5, boxShadow: `0 20px 48px rgba(0,0,0,0.7), 0 0 0 1px ${T.borderGlow}` }}
       whileTap={{ scale: 0.97 }}
       transition={{ type: "spring", stiffness: 340, damping: 22 }}
       style={{
-        background: T.bgCard,
-        border: `1px solid ${T.borderMid}`,
-        borderRadius: 18, overflow: "hidden", cursor: "pointer", textAlign: "left", width: "100%",
+        background: T.bgCard, border: `1px solid ${T.borderMid}`,
+        borderRadius: 20, overflow: "hidden", cursor: "pointer", textAlign: "left", width: "100%",
         boxShadow: "0 2px 12px rgba(0,0,0,0.3)",
       }}>
-      {/* Cover image area */}
-      <div style={{ height: 120, background: biz.gradient, position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.45) 100%)" }} />
-        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Avatar initials={biz.initials} gradient="rgba(0,0,0,0.35)" size={58} />
+      {/* Cover */}
+      <div style={{ height: 130, background: biz.gradient, position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.0) 20%, rgba(0,0,0,0.7) 100%)" }} />
+        {/* Avatar top-center */}
+        <div style={{ position: "absolute", top: 14, left: "50%", transform: "translateX(-50%)" }}>
+          <Avatar initials={biz.initials} gradient="rgba(0,0,0,0.4)" size={48} />
         </div>
         {/* Open badge */}
-        <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(34,197,94,0.2)", border: "1px solid rgba(34,197,94,0.5)", color: "#22C55E", fontSize: 9, fontWeight: 800, padding: "3px 8px", borderRadius: 20, letterSpacing: 0.5, backdropFilter: "blur(6px)" }}>
+        <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(34,197,94,0.18)", border: "1px solid rgba(34,197,94,0.5)", color: "#22C55E", fontSize: 9, fontWeight: 800, padding: "3px 8px", borderRadius: 20, backdropFilter: "blur(6px)", letterSpacing: "0.04em" }}>
           ● OPEN
         </div>
-        {/* Delivery pill */}
-        <div style={{ position: "absolute", bottom: 10, left: 10, background: "rgba(0,0,0,0.65)", color: T.cream, fontSize: 10, fontWeight: 600, padding: "4px 9px", borderRadius: 20, backdropFilter: "blur(6px)", display: "flex", alignItems: "center", gap: 4 }}>
-          <Clock size={10} /> {biz.deliveryTime}
+        {/* Bottom row — name + delivery */}
+        <div style={{ position: "absolute", bottom: 10, left: 12, right: 12, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 14, fontStyle: "italic", color: "white", fontWeight: 400, textShadow: "0 1px 6px rgba(0,0,0,0.8)", lineHeight: 1.2 }}>{biz.name}</div>
+          <div style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", border: `1px solid rgba(255,255,255,0.1)`, color: T.gold, fontSize: 9, fontWeight: 700, padding: "3px 8px", borderRadius: 6, display: "flex", alignItems: "center", gap: 3, flexShrink: 0 }}>
+            <Clock size={9} /> {biz.deliveryTime}
+          </div>
         </div>
       </div>
-      <div style={{ padding: "14px 16px" }}>
-        <div style={{ fontWeight: 800, fontSize: 15, color: T.cream, marginBottom: 3, letterSpacing: "-0.2px" }}>{biz.name}</div>
-        <div style={{ fontSize: 12, color: T.creamMid, marginBottom: 10, lineHeight: 1.4 }}>{biz.tagline}</div>
+      {/* Body */}
+      <div style={{ padding: "12px 14px 15px" }}>
+        <div style={{ fontSize: 12, color: T.creamMid, marginBottom: 10, lineHeight: 1.45 }}>{biz.tagline}</div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <Star size={12} color={T.gold} fill={T.gold} />
+            <Star size={11} color={T.gold} fill={T.gold} />
             <span style={{ color: T.gold, fontWeight: 700, fontSize: 12 }}>{biz.rating}</span>
             <span style={{ color: T.muted, fontSize: 11 }}>({biz.reviews})</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 3, color: T.muted, fontSize: 11 }}>
-            <MapPin size={10} /> {biz.location.split(",")[0]}
+            <MapPin size={10} /> {biz.location?.split(",")[0]}
           </div>
         </div>
+        {/* Delivery fee */}
+        {biz.deliveryFee !== undefined && (
+          <div style={{ marginTop: 8, fontSize: 11, color: biz.deliveryFee === 0 ? T.success : T.creamMid, fontWeight: 600 }}>
+            {biz.deliveryFee === 0 ? "✓ Free delivery" : `$${biz.deliveryFee.toFixed(2)} delivery`}
+          </div>
+        )}
       </div>
     </motion.button>
   );
@@ -807,11 +876,14 @@ function HomePage({ setPage, setSelectedBusiness, setSelectedService, setSearchQ
     if (search.trim()) { setSearchQuery(search.trim()); setPage("search"); }
   };
 
-  const SectionHeader = ({ title, onSeeAll }) => (
-    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14, padding:"0 16px" }}>
-      <span style={{ fontSize:18, fontWeight:900, color:T.cream, letterSpacing:"-0.3px" }}>{title}</span>
+  const SectionHeader = ({ title, onSeeAll, sub }) => (
+    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:14, padding:"0 16px" }}>
+      <div>
+        <div style={{ fontFamily:"'Playfair Display', serif", fontSize: isMobile ? 20 : 22, fontWeight:400, fontStyle:"italic", color:T.cream, letterSpacing:"-0.01em", lineHeight:1.2 }}>{title}</div>
+        {sub && <div style={{ fontSize:11, color:T.muted, marginTop:2, fontWeight:500 }}>{sub}</div>}
+      </div>
       {onSeeAll && (
-        <button onClick={onSeeAll} style={{ background:"none", border:"none", color:T.gold, cursor:"pointer", fontSize:12, fontWeight:700, display:"flex", alignItems:"center", gap:3, letterSpacing:"0.03em", textTransform:"uppercase" }}>
+        <button onClick={onSeeAll} style={{ background:"none", border:"none", color:T.gold, cursor:"pointer", fontSize:12, fontWeight:700, display:"flex", alignItems:"center", gap:3, letterSpacing:"0.05em", textTransform:"uppercase", flexShrink:0 }}>
           See all <ChevronRight size={13} />
         </button>
       )}
@@ -871,44 +943,72 @@ function HomePage({ setPage, setSelectedBusiness, setSelectedService, setSearchQ
         </div>
       )}
 
+      {/* ── Hero — shown to logged-out users ── */}
+      {!user && (
+        <div style={{ margin:"20px 16px 0", borderRadius:24, overflow:"hidden", position:"relative", background:`linear-gradient(135deg, #060F20 0%, #0B1C3A 40%, #1A3A6B 100%)`, border:`1px solid ${T.borderGlow}`, padding: isMobile ? "32px 24px" : "48px 40px", boxShadow:`0 8px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(200,168,75,0.15)` }}>
+          {/* Decorative wave mark */}
+          <div style={{ position:"absolute", right: isMobile ? -20 : 40, top:"50%", transform:"translateY(-50%)", opacity:0.07, fontSize: isMobile ? 180 : 260, lineHeight:1, userSelect:"none", pointerEvents:"none" }}>〜</div>
+          <div style={{ position:"relative", zIndex:1 }}>
+            <div style={{ fontSize:11, color:T.gold, fontWeight:700, letterSpacing:"0.15em", textTransform:"uppercase", marginBottom:12 }}>✦ The New Wave Is Here</div>
+            <h1 style={{ fontFamily:"'Playfair Display', serif", fontSize: isMobile ? 32 : 48, fontWeight:400, color:T.cream, lineHeight:1.15, marginBottom:12, letterSpacing:"-0.02em" }}>
+              Dream Deep.
+            </h1>
+            <p style={{ color:T.creamMid, fontSize: isMobile ? 14 : 16, lineHeight:1.65, marginBottom:28, maxWidth:480 }}>
+              On-demand Black beauty — products delivered in minutes, services booked in seconds, a community that sees you.
+            </p>
+            <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+              <motion.button whileTap={{ scale:0.97 }} onClick={() => setPage("shop")} style={{ background:`linear-gradient(135deg,${T.gold},${T.goldDark})`, border:"none", borderRadius:12, padding:"12px 28px", color:"#fff", fontWeight:800, fontSize:14, cursor:"pointer", boxShadow:`0 0 24px ${T.goldGlow}` }}>
+                Shop Now
+              </motion.button>
+              <motion.button whileTap={{ scale:0.97 }} onClick={() => setPage("services")} style={{ background:"rgba(255,255,255,0.06)", border:`1px solid rgba(255,255,255,0.15)`, borderRadius:12, padding:"12px 24px", color:T.cream, fontWeight:700, fontSize:14, cursor:"pointer", backdropFilter:"blur(8px)" }}>
+                Book a Service
+              </motion.button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Feature Entry Cards ── */}
-      <div className="oshun-hscroll" style={{ padding:"14px 16px 0", display:"flex", gap:10, overflowX:"auto" }}>
-        <button onClick={() => setPage("subscribe")} style={{ flexShrink:0, background:`linear-gradient(135deg,${T.purpleDeep},#0D0D18)`, border:`1px solid ${T.purple}44`, borderRadius:16, padding:"13px 18px", cursor:"pointer", textAlign:"left", minWidth:160, boxShadow:`0 4px 20px ${T.purpleGlow}` }}>
-          <div style={{ fontSize:22, marginBottom:6 }}>💎</div>
-          <div style={{ fontWeight:800, color:T.cream, fontSize:13 }}>Beauty Box</div>
-          <div style={{ fontSize:11, color:T.muted, marginTop:2 }}>Monthly brand drops</div>
-        </button>
-        <button onClick={() => setPage("tryon")} style={{ flexShrink:0, background:`linear-gradient(135deg,#0D1420,#141820)`, border:`1px solid ${T.gold}33`, borderRadius:16, padding:"13px 18px", cursor:"pointer", textAlign:"left", minWidth:160, boxShadow:`0 4px 20px ${T.goldGlow}` }}>
-          <div style={{ fontSize:22, marginBottom:6 }}>✨</div>
-          <div style={{ fontWeight:800, color:T.cream, fontSize:13 }}>Virtual Try-On</div>
-          <div style={{ fontSize:11, color:T.muted, marginTop:2 }}>See it before you buy</div>
-        </button>
-        <button onClick={() => setPage("services")} style={{ flexShrink:0, background:T.bgCard, border:`1px solid ${T.borderMid}`, borderRadius:16, padding:"13px 18px", cursor:"pointer", textAlign:"left", minWidth:160 }}>
-          <div style={{ fontSize:22, marginBottom:6 }}>📅</div>
-          <div style={{ fontWeight:800, color:T.cream, fontSize:13 }}>Book a Service</div>
-          <div style={{ fontSize:11, color:T.muted, marginTop:2 }}>Nail, hair & skin care</div>
-        </button>
-        <button onClick={() => setPage("brands")} style={{ flexShrink:0, background:T.bgCard, border:`1px solid ${T.borderMid}`, borderRadius:16, padding:"13px 18px", cursor:"pointer", textAlign:"left", minWidth:160 }}>
-          <div style={{ fontSize:22, marginBottom:6 }}>🌐</div>
-          <div style={{ fontWeight:800, color:T.cream, fontSize:13 }}>Brand Partners</div>
-          <div style={{ fontSize:11, color:T.muted, marginTop:2 }}>Ship-to-you brands</div>
-        </button>
+      <div className="oshun-hscroll" style={{ padding:"16px 16px 0", display:"flex", gap:12, overflowX:"auto" }}>
+        {[
+          { page:"subscribe", gradient:`linear-gradient(135deg,#2A1A4E,${T.purpleDeep})`, glow:T.purpleGlow, border:`${T.purple}55`, icon:"💎", label:"Beauty Box",      sub:"Monthly brand drops"   },
+          { page:"shop",      gradient:`linear-gradient(135deg,#0B2A2E,#1A3A6B)`,        glow:T.seafoamGlow||"rgba(74,171,191,0.3)", border:`${T.seafoam}33`, icon:"🛵", label:"Local Delivery",   sub:"20–45 min to you"      },
+          { page:"services",  gradient:`linear-gradient(135deg,#1A0A2E,#2A1A4E)`,        glow:T.purpleGlow,  border:`${T.purple}44`, icon:"📅", label:"Book a Service",  sub:"Hair, nails & skin"    },
+          { page:"brands",    gradient:`linear-gradient(135deg,#0A1A10,#1A3A6B)`,        glow:T.goldGlow,    border:`${T.gold}33`,   icon:"🌐", label:"Brand Partners",  sub:"Ships to your door"    },
+          { page:"community", gradient:`linear-gradient(135deg,#0A1A2E,#1A2A4E)`,        glow:"rgba(74,171,191,0.2)", border:`${T.seafoam}22`, icon:"✦", label:"Community", sub:"The Wave"          },
+        ].map(card => (
+          <motion.button key={card.page} onClick={() => setPage(card.page)}
+            whileHover={{ y:-3, boxShadow:`0 8px 32px ${card.glow}` }}
+            whileTap={{ scale:0.97 }}
+            style={{ flexShrink:0, background:card.gradient, border:`1px solid ${card.border}`, borderRadius:18, padding:"16px 20px", cursor:"pointer", textAlign:"left", minWidth:155, boxShadow:`0 4px 20px ${card.glow}`, transition:"box-shadow 0.2s" }}>
+            <div style={{ fontSize:24, marginBottom:8 }}>{card.icon}</div>
+            <div style={{ fontWeight:800, color:T.cream, fontSize:13, marginBottom:3 }}>{card.label}</div>
+            <div style={{ fontSize:11, color:T.muted }}>{card.sub}</div>
+          </motion.button>
+        ))}
       </div>
 
       {/* ── Category Chips ── */}
-      <div className="oshun-hscroll" style={{ padding:"14px 0 0", overflowX:"auto" }}>
+      <div className="oshun-hscroll" style={{ padding:"16px 0 0", overflowX:"auto" }}>
         <div style={{ display:"flex", gap:8, padding:"0 16px", width:"max-content" }}>
           {CATEGORIES.map(cat => (
-            <button key={cat.id} onClick={() => { setShopCategory(cat.id); setPage("shop"); }} style={{
-              display:"flex", alignItems:"center", gap:6,
-              background:T.glass, border:`1px solid ${T.glassBorder}`,
-              borderRadius:22, padding:"7px 16px", cursor:"pointer",
-              color:T.cream, fontSize:13, fontWeight:500, whiteSpace:"nowrap", flexShrink:0,
-              backdropFilter:"blur(8px)",
-              boxShadow:"0 2px 8px rgba(0,0,0,0.3)",
-            }}>
-              <span style={{ fontSize:14 }}>{cat.emoji}</span>{cat.label}
-            </button>
+            <motion.button
+              key={cat.id}
+              onClick={() => { setShopCategory(cat.id); setPage("shop"); }}
+              whileHover={{ y: -2, boxShadow: `0 4px 16px ${T.goldGlow}` }}
+              whileTap={{ scale: 0.96 }}
+              style={{
+                display:"flex", alignItems:"center", gap:7,
+                background: `linear-gradient(135deg, ${T.bgCard}, ${T.bgCardAlt})`,
+                border:`1px solid ${T.borderMid}`,
+                borderRadius:24, padding:"8px 18px", cursor:"pointer",
+                color:T.cream, fontSize:13, fontWeight:600, whiteSpace:"nowrap", flexShrink:0,
+                boxShadow:"0 2px 8px rgba(0,0,0,0.3)",
+                transition: "border-color 0.15s",
+              }}>
+              <span style={{ fontSize:16 }}>{cat.emoji}</span>
+              <span style={{ fontFamily: "'Jost', sans-serif", letterSpacing:"0.01em" }}>{cat.label}</span>
+            </motion.button>
           ))}
         </div>
       </div>
@@ -918,7 +1018,7 @@ function HomePage({ setPage, setSelectedBusiness, setSelectedService, setSearchQ
 
       {/* ── Shops Near You ── */}
       <section style={{ marginTop:26 }}>
-        <SectionHeader title="Shops Near You" onSeeAll={() => setPage("shop")} />
+        <SectionHeader title="Shops Near You" sub="Black-owned, on-demand delivery" onSeeAll={() => setPage("shop")} />
         <div className="oshun-hscroll" style={{ overflowX:"auto", paddingBottom:6 }}>
           <div style={{ display:"flex", gap:14, padding:"0 16px", width:"max-content" }}>
             {BUSINESSES.map(biz => (
@@ -1028,7 +1128,7 @@ function HomePage({ setPage, setSelectedBusiness, setSelectedService, setSearchQ
 
       {/* ── Book a Service ── */}
       <section style={{ marginTop:28 }}>
-        <SectionHeader title="Book a Service" onSeeAll={() => setPage("services")} />
+        <SectionHeader title="Book a Service" sub="Beauty professionals near you" onSeeAll={() => setPage("services")} />
         <div className="oshun-hscroll" style={{ overflowX:"auto", paddingBottom:6 }}>
           <div style={{ display:"flex", gap:12, padding:"0 16px", width:"max-content" }}>
             {SERVICES.map(svc => (
@@ -1059,7 +1159,7 @@ function HomePage({ setPage, setSelectedBusiness, setSelectedService, setSearchQ
 
       {/* ── Brand Partners ── */}
       <section style={{ marginTop:28 }}>
-        <SectionHeader title="Brand Partners" onSeeAll={() => setPage("brands")} />
+        <SectionHeader title="Brand Partners" sub="Ships to your door" onSeeAll={() => setPage("brands")} />
         <div className="oshun-hscroll" style={{ overflowX:"auto", paddingBottom:6 }}>
           <div style={{ display:"flex", gap:12, padding:"0 16px", width:"max-content" }}>
             {BRAND_PARTNERS.map(bp => (
@@ -1346,16 +1446,16 @@ function ProductCard({ product, onAddToCart, inCart, onViewDetail }) {
       </div>
 
       {/* Body */}
-      <div style={{ padding: "14px 14px 16px" }}>
-        <div style={{ fontSize: 9, color: T.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 4 }}>{product.brand}</div>
-        <div style={{ fontWeight: 700, fontSize: 13, color: T.cream, marginBottom: 8, lineHeight: 1.35 }}>{product.name}</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 12 }}>
-          <Star size={11} fill={T.gold} color={T.gold} />
-          <span style={{ color: T.gold, fontSize: 12, fontWeight: 700 }}>{product.rating}</span>
-          <span style={{ color: T.muted, fontSize: 11 }}>({product.reviews.toLocaleString()})</span>
+      <div style={{ padding: "12px 14px 15px" }}>
+        <div style={{ fontSize: 9, color: T.gold, letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 700, marginBottom: 3 }}>{product.brand}</div>
+        <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400, fontStyle: "italic", fontSize: 14, color: T.cream, marginBottom: 8, lineHeight: 1.3 }}>{product.name}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 12 }}>
+          <Star size={10} fill={T.gold} color={T.gold} />
+          <span style={{ color: T.gold, fontSize: 11, fontWeight: 700 }}>{product.rating}</span>
+          <span style={{ color: T.muted, fontSize: 10 }}>({product.reviews.toLocaleString()})</span>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontWeight: 800, fontSize: 16, color: T.goldLight }}>${product.price.toFixed(2)}</span>
+          <span style={{ fontWeight: 900, fontSize: 17, color: T.goldLight }}>${product.price.toFixed(2)}</span>
           <button onClick={handleAdd} disabled={outOfStock}
             style={{
               background: outOfStock ? T.bgCardAlt : added ? T.success : `linear-gradient(135deg,${T.gold},${T.goldDark})`,
@@ -1689,39 +1789,60 @@ function ShopPage({ cart, setCart, setSelectedBrand, setPage, initialCategory, p
 function ServiceCardFull({ svc, onBook }) {
   const [hovered, setHovered] = useState(false);
   return (
-    <div
+    <motion.div
       className="oshun-card"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      whileHover={{ y: -4 }}
+      transition={{ type: "spring", stiffness: 340, damping: 26 }}
       style={{
-        background: T.bgCard, border: `1px solid ${hovered ? `${T.purple}55` : T.borderMid}`,
+        background: T.bgCard,
+        border: `1px solid ${hovered ? T.borderGlow : T.borderMid}`,
         borderRadius: 20, overflow: "hidden",
-        boxShadow: hovered ? `0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px ${T.purple}33` : "0 2px 8px rgba(0,0,0,0.3)",
+        boxShadow: hovered ? `0 16px 48px rgba(0,0,0,0.65), 0 0 0 1px ${T.borderGlow}` : "0 2px 12px rgba(0,0,0,0.35)",
+        transition: "border-color 0.2s, box-shadow 0.2s",
       }}>
       {/* Cover */}
-      <div style={{ height: 140, background: svc.gradient, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.0) 30%, rgba(0,0,0,0.5) 100%)" }} />
-        <Avatar initials={svc.providerAvatar} gradient="rgba(0,0,0,0.3)" size={64} />
-        <div style={{ position: "absolute", bottom: 12, right: 12, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", border: `1px solid rgba(255,255,255,0.1)`, color: T.cream, fontSize: 10, fontWeight: 700, padding: "4px 9px", borderRadius: 6, display: "flex", alignItems: "center", gap: 4 }}>
-          <Clock size={10} /> {svc.duration}
+      <div style={{ height: 160, background: svc.gradient, position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.0) 20%, rgba(0,0,0,0.65) 100%)" }} />
+        {/* Provider avatar — centered */}
+        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -60%)", zIndex: 1 }}>
+          <Avatar initials={svc.providerAvatar} gradient="rgba(0,0,0,0.4)" size={60} />
+        </div>
+        {/* Bottom info row */}
+        <div style={{ position: "absolute", bottom: 12, left: 14, right: 14, display: "flex", justifyContent: "space-between", alignItems: "center", zIndex: 2 }}>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, fontWeight: 400, fontStyle: "italic", color: "white", textShadow: "0 1px 6px rgba(0,0,0,0.8)" }}>{svc.name}</div>
+          <div style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)", border: `1px solid rgba(255,255,255,0.12)`, color: T.cream, fontSize: 10, fontWeight: 700, padding: "4px 9px", borderRadius: 6, display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+            <Clock size={10} /> {svc.duration}
+          </div>
         </div>
       </div>
       {/* Body */}
-      <div style={{ padding: "18px 18px 20px" }}>
-        <div style={{ fontWeight: 800, fontSize: 17, color: T.cream, marginBottom: 3, letterSpacing: "-0.01em" }}>{svc.name}</div>
-        <div style={{ fontSize: 12, color: T.gold, fontWeight: 600, marginBottom: 10 }}>by {svc.provider}</div>
-        <div style={{ fontSize: 13, color: T.creamMid, marginBottom: 14, lineHeight: 1.5 }}>{svc.description}</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 18 }}>
-          <Star size={12} fill={T.gold} color={T.gold} />
-          <span style={{ color: T.gold, fontWeight: 700, fontSize: 13 }}>{svc.rating}</span>
-          <span style={{ color: T.muted, fontSize: 12 }}>({svc.reviews} reviews)</span>
+      <div style={{ padding: "16px 18px 20px" }}>
+        <div style={{ fontSize: 11, color: T.gold, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 8 }}>
+          {svc.provider}
+        </div>
+        <div style={{ fontSize: 13, color: T.creamMid, marginBottom: 14, lineHeight: 1.55 }}>{svc.description}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 16 }}>
+          {[1,2,3,4,5].map(s => <Star key={s} size={11} fill={s <= Math.round(svc.rating) ? T.gold : "none"} color={T.gold} />)}
+          <span style={{ color: T.gold, fontWeight: 700, fontSize: 12 }}>{svc.rating}</span>
+          <span style={{ color: T.muted, fontSize: 11 }}>({svc.reviews})</span>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontWeight: 900, fontSize: 22, color: T.goldLight }}>${svc.price}</span>
-          <Btn onClick={onBook} variant="purple" style={{ padding: "10px 20px", fontSize: 13, borderRadius: 11 }}>Book Now</Btn>
+          <div>
+            <span style={{ fontWeight: 900, fontSize: 24, color: T.goldLight }}>
+              {svc.price === 0 ? "Free" : `$${svc.price}`}
+            </span>
+          </div>
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            onClick={onBook}
+            style={{ background: `linear-gradient(135deg,${T.gold},${T.goldDark})`, border: "none", borderRadius: 11, padding: "10px 22px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", boxShadow: `0 0 16px ${T.goldGlow}` }}>
+            Book Now
+          </motion.button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -1737,8 +1858,8 @@ function ServicesPage({ setPage, setSelectedService, services = SERVICES }) {
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "24px 16px" : "36px 24px" }}>
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: isMobile ? 24 : 30, fontWeight: 900, color: T.cream, marginBottom: 4, letterSpacing: "-0.02em" }}>Book a Service</h1>
-        <p style={{ color: T.creamMid, fontSize: 14 }}>Beauty professionals, on your schedule</p>
+        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: isMobile ? 28 : 38, fontWeight: 400, fontStyle: "italic", color: T.cream, marginBottom: 4, letterSpacing: "-0.01em" }}>Book a Service</h1>
+        <p style={{ color: T.gold, fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>Beauty professionals, on your schedule</p>
       </div>
 
       {/* Category chips */}
@@ -6052,16 +6173,31 @@ function AuthModal({ onClose, setUser, setPage }) {
         )}
 
         {/* Fields */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 11, marginBottom: 20 }}>
-          {mode === "signup" && <Input placeholder="Full Name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />}
-          {mode === "signup" && accountType === "business" && <Input placeholder="Business Name" value={form.businessName} onChange={e => setForm(f => ({ ...f, businessName: e.target.value }))} />}
-          <Input placeholder="Email address" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
-          <div style={{ position: "relative" }}>
-            <Input placeholder="Password" type={showPass ? "text" : "password"} value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} />
-            <button onClick={() => setShowPass(!showPass)} style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: T.muted }}>
-              {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
-            </button>
-          </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
+          {mode === "signup" && (
+            <TextInput
+              label="Full Name" placeholder="Your full name"
+              value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              styles={{ label: { color: T.creamMid, fontSize: 12, marginBottom: 4 }, input: { background: T.bgCardAlt, border: `1px solid ${T.borderMid}`, color: T.cream, borderRadius: 10, '&:focus': { borderColor: T.gold } } }}
+            />
+          )}
+          {mode === "signup" && accountType === "business" && (
+            <TextInput
+              label="Business Name" placeholder="Your business name"
+              value={form.businessName} onChange={e => setForm(f => ({ ...f, businessName: e.target.value }))}
+              styles={{ label: { color: T.creamMid, fontSize: 12, marginBottom: 4 }, input: { background: T.bgCardAlt, border: `1px solid ${T.borderMid}`, color: T.cream, borderRadius: 10 } }}
+            />
+          )}
+          <TextInput
+            label="Email address" placeholder="you@example.com" type="email"
+            value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+            styles={{ label: { color: T.creamMid, fontSize: 12, marginBottom: 4 }, input: { background: T.bgCardAlt, border: `1px solid ${T.borderMid}`, color: T.cream, borderRadius: 10 } }}
+          />
+          <PasswordInput
+            label="Password" placeholder="Min. 8 characters"
+            value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+            styles={{ label: { color: T.creamMid, fontSize: 12, marginBottom: 4 }, input: { background: T.bgCardAlt, border: `1px solid ${T.borderMid}`, color: T.cream, borderRadius: 10 }, innerInput: { color: T.cream } }}
+          />
         </div>
 
         {authError && (
