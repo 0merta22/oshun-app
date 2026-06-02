@@ -398,11 +398,10 @@ function Navbar({ page, setPage, cart, user, onAuthOpen, activeOrder, onTabChang
   const consumerLinks = [
     { id: "home",      tab: null, label: "Home",      Icon: Home          },
     { id: "shop",      tab: null, label: "Shop",      Icon: Package       },
-    { id: "community", tab: null, label: "Community", Icon: Users         },
-    { id: "creator",   tab: null, label: "Creator",   Icon: Crown         },
-    { id: "oshun-plus",tab: null, label: "Oshun+",   Icon: Star          },
     { id: "services",  tab: null, label: "Services",  Icon: Scissors      },
+    { id: "community", tab: null, label: "Community", Icon: Users         },
     { id: "brands",    tab: null, label: "Brands",    Icon: Store         },
+    { id: "oshun-plus",tab: null, label: "Oshun+",   Icon: Star          },
     { id: "join",      tab: null, label: "Partner",   Icon: MessageCircle },
   ];
   const businessLinks = [
@@ -592,7 +591,7 @@ function MobileBottomNav({ page, setPage, cart, user, onAuthOpen }) {
     { id:"home",      label:"Home",      Icon:Home     },
     { id:"shop",      label:"Shop",      Icon:Package  },
     { id:"community", label:"Community", Icon:Users    },
-    { id:"creator",   label:"Creator",   Icon:Crown    },
+    { id:"brands",    label:"Brands",    Icon:Store    },
     { id: user?.type === "business" ? "dashboard" : user?.type === "driver" ? "driver" : "profile",
       label:"Account", Icon:User, action: !user ? onAuthOpen : null },
   ];
@@ -2218,16 +2217,40 @@ function BusinessPage({ business, cart, setCart, setPage, setSelectedService, us
 // ─────────────────────────────────────────────────────────────
 // BRAND DIRECTORY PAGE
 // ─────────────────────────────────────────────────────────────
-function BrandDirectoryPage({ setPage, setSelectedBrand, brandPartners = BRAND_PARTNERS }) {
+function BrandDirectoryPage({ setPage, setSelectedBrand, brandPartners = BRAND_PARTNERS, user, onAuthOpen }) {
   const { isMobile, isTablet } = useBreakpoint();
+  const [activeTab, setActiveTab] = useState("brands");
+
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: isMobile ? "24px 16px" : "36px 24px" }}>
-      <button onClick={() => setPage("shop")} style={{ background: "none", border: "none", color: T.gold, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, marginBottom: 28, fontWeight: 700, fontSize: 14 }}>
-        <ArrowLeft size={16} /> Back to Shop
-      </button>
 
+      {/* Page header */}
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: isMobile ? 24 : 30, fontWeight: 900, color: T.cream, marginBottom: 4, letterSpacing: "-0.02em" }}>Brands & Creators</h1>
+        <p style={{ color: T.creamMid, fontSize: 14 }}>Shop national brand partners or join the Oshun Creator Program.</p>
+      </div>
+
+      {/* Tab switcher */}
+      <div style={{ display: "flex", gap: 6, background: T.bgCard, border: `1px solid ${T.borderMid}`, borderRadius: 14, padding: 4, marginBottom: 32, width: "fit-content" }}>
+        {[["brands", "🌐 Brand Partners"], ["creator", "✦ Creator Program"]].map(([id, label]) => (
+          <button key={id} onClick={() => setActiveTab(id)} style={{
+            background: activeTab === id ? `linear-gradient(135deg,${T.gold},${T.goldDark})` : "transparent",
+            color: activeTab === id ? "#ffffff" : T.creamMid,
+            border: "none", borderRadius: 10, padding: isMobile ? "8px 14px" : "9px 20px",
+            cursor: "pointer", fontWeight: 700, fontSize: 13, transition: "all 0.2s",
+            boxShadow: activeTab === id ? `0 0 14px ${T.goldGlow}` : "none",
+          }}>{label}</button>
+        ))}
+      </div>
+
+      {/* Creator tab — render CreatorHub inline */}
+      {activeTab === "creator" && (
+        <CreatorHub user={user} onAuthOpen={onAuthOpen} setPage={setPage} />
+      )}
+
+      {/* Brands tab content */}
+      {activeTab === "brands" && <>
       <div style={{ marginBottom: 30 }}>
-        <h1 style={{ fontSize: isMobile ? 24 : 30, fontWeight: 900, color: T.cream, marginBottom: 6, letterSpacing: "-0.02em" }}>🌐 National Brand Partners</h1>
         <p style={{ color: T.creamMid, fontSize: 14 }}>Independent brands shipping specialty products directly to your door.</p>
       </div>
 
@@ -2259,6 +2282,7 @@ function BrandDirectoryPage({ setPage, setSelectedBrand, brandPartners = BRAND_P
         </div>
         <Btn variant="outline" style={{ padding: "10px 22px", whiteSpace: "nowrap" }}>Get Notified</Btn>
       </div>
+      </>}
     </div>
   );
 }
@@ -8223,7 +8247,7 @@ export default function App() {
         {page === "home"      && <HomePage          setPage={setPage} setSelectedBusiness={setSelectedBusiness} setSelectedService={setSelectedService} setSearchQuery={setSearchQuery} setShopCategory={setShopCategory} user={user} products={liveProducts} businesses={liveBusinesses} services={liveServices} brandPartners={liveBrandPartners} />}
         {page === "search"    && <SearchResultsPage query={searchQuery} cart={cart} setCart={setCart} setPage={setPage} setSelectedBusiness={setSelectedBusiness} setSelectedService={setSelectedService} setSelectedBrand={setSelectedBrand} setSearchQuery={(q) => { setSearchQuery(q); setPage("search"); }} products={liveProducts} businesses={liveBusinesses} services={liveServices} brandPartners={liveBrandPartners} brandProducts={liveBrandProducts} />}
         {page === "shop"      && <ShopPage          cart={cart} setCart={setCart} setSelectedBrand={setSelectedBrand} setPage={setPage} initialCategory={shopCategory} products={liveProducts} brandProducts={liveBrandProducts} />}
-        {page === "brands"    && <BrandDirectoryPage setPage={setPage} setSelectedBrand={setSelectedBrand} brandPartners={liveBrandPartners} />}
+        {page === "brands"    && <BrandDirectoryPage setPage={setPage} setSelectedBrand={setSelectedBrand} brandPartners={liveBrandPartners} user={user} onAuthOpen={() => setAuthOpen(true)} />}
         {page === "brand"     && <BrandStorefrontPage brand={selectedBrand} cart={cart} setCart={setCart} setPage={setPage} brandProducts={liveBrandProducts} />}
         {page === "services"  && <ServicesPage      setPage={setPage} setSelectedService={setSelectedService} services={liveServices} />}
         {page === "business"  && <BusinessPage      business={selectedBusiness} cart={cart} setCart={setCart} setPage={setPage} setSelectedService={setSelectedService} user={user} onAuthOpen={() => setAuthOpen(true)} products={liveProducts} services={liveServices} />}
