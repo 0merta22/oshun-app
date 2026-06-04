@@ -7356,13 +7356,17 @@ function CommunityFeed({ user, cart, setCart, setPage: setAppPage }) {
     }
   }, [feedTab, category]);
 
+  const [newsError, setNewsError] = useState(false);
+
   const loadNews = useCallback(async () => {
     setNewsLoading(true);
+    setNewsError(false);
     try {
       const data = await fetchNews({ category: newsCategory === "all" ? undefined : newsCategory, limit: 30 });
       setNews(data.articles ?? []);
     } catch (_) {
       setNews([]);
+      setNewsError(true);
     } finally {
       setNewsLoading(false);
     }
@@ -7510,9 +7514,18 @@ function CommunityFeed({ user, cart, setCart, setPage: setAppPage }) {
             ))
           ) : news.length === 0 ? (
             <div style={{ textAlign: "center", padding: "60px 24px" }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>🌊</div>
-              <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 20, color: T.cream, marginBottom: 8 }}>The Wave is loading</div>
-              <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.6 }}>Stories from the community are on their way.</div>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>{newsError ? "📡" : "🌊"}</div>
+              <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 20, color: T.cream, marginBottom: 8 }}>
+                {newsError ? "Couldn't reach The Wave" : "No stories in this category"}
+              </div>
+              <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.6, marginBottom: newsError ? 20 : 0 }}>
+                {newsError ? "Check your connection and try again." : "Try switching to All or a different category."}
+              </div>
+              {newsError && (
+                <button onClick={loadNews} style={{ background: `linear-gradient(135deg,${T.gold},${T.goldDark})`, border: "none", borderRadius: 12, padding: "10px 24px", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                  Retry
+                </button>
+              )}
             </div>
           ) : (
             news.map((article, i) => (
