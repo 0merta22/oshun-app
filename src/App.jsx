@@ -1926,7 +1926,7 @@ function BookingPage({ service, setPage }) {
       <div style={{ width: 88, height: 88, borderRadius: "50%", background: `linear-gradient(135deg,${T.gold},${T.success})`, margin: "0 auto 28px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 40px ${T.goldGlowStrong}`, animation: "goldGlow 3s ease-in-out infinite" }}>
         <CheckCircle size={42} color="#ffffff" />
       </div>
-      <h2 style={{ fontSize: 30, fontWeight: 900, color: T.cream, marginBottom: 8, letterSpacing: "-0.02em" }}>You're Booked!</h2>
+      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 36, fontWeight: 400, fontStyle: "italic", color: T.cream, marginBottom: 8, letterSpacing: "-0.01em" }}>You're Booked!</h2>
       <p style={{ color: T.creamMid, marginBottom: 6, fontSize: 15 }}>{service.name}</p>
       <p style={{ color: T.gold, fontWeight: 700, marginBottom: 36, fontSize: 15 }}>{fmtDate(selectedDate)} at {selectedTime}</p>
       <Btn onClick={() => setPage("home")} style={{ padding: "14px 32px", fontSize: 15 }}>Back to Home</Btn>
@@ -2296,7 +2296,7 @@ function BusinessPage({ business, cart, setCart, setPage, setSelectedService, us
       </div>
 
       <div style={{ maxWidth: 1000, margin: "0 auto", padding: isMobile ? "44px 16px 28px" : "48px 24px 32px" }}>
-        <h1 style={{ fontSize: isMobile ? 22 : 28, fontWeight: 900, color: T.cream, marginBottom: 5, letterSpacing: "-0.02em" }}>{business.name}</h1>
+        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: isMobile ? 26 : 34, fontWeight: 400, fontStyle: "italic", color: T.cream, marginBottom: 5, letterSpacing: "-0.01em" }}>{business.name}</h1>
         <p style={{ color: T.creamMid, marginBottom: 14, fontSize: 14, lineHeight: 1.6 }}>{business.description}</p>
 
         {/* Meta row */}
@@ -2366,7 +2366,7 @@ function BrandDirectoryPage({ setPage, setSelectedBrand, brandPartners = BRAND_P
 
       {/* Page header */}
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: isMobile ? 24 : 30, fontWeight: 900, color: T.cream, marginBottom: 4, letterSpacing: "-0.02em" }}>Brands & Creators</h1>
+        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: isMobile ? 28 : 38, fontWeight: 400, fontStyle: "italic", color: T.cream, marginBottom: 4, letterSpacing: "-0.01em" }}>Brands & Creators</h1>
         <p style={{ color: T.creamMid, fontSize: 14 }}>Shop national brand partners or join the Oshun Creator Program.</p>
       </div>
 
@@ -2464,7 +2464,7 @@ function BrandStorefrontPage({ brand, cart, setCart, setPage, brandProducts = BR
       </div>
 
       <div style={{ maxWidth: 1000, margin: "0 auto", padding: isMobile ? "44px 16px 28px" : "48px 24px 32px" }}>
-        <h1 style={{ fontSize: isMobile ? 22 : 28, fontWeight: 900, color: T.cream, marginBottom: 5, letterSpacing: "-0.02em" }}>{brand.name}</h1>
+        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: isMobile ? 26 : 34, fontWeight: 400, fontStyle: "italic", color: T.cream, marginBottom: 5, letterSpacing: "-0.01em" }}>{brand.name}</h1>
         <p style={{ color: T.creamMid, marginBottom: 14, fontSize: 14, lineHeight: 1.6 }}>{brand.description}</p>
 
         {/* Meta row */}
@@ -3082,7 +3082,7 @@ function CartPage({ cart, setCart, setPage }) {
 
   return (
     <div style={{ maxWidth: 860, margin: "0 auto", padding: isMobile ? "24px 16px" : "36px 24px" }}>
-      <h1 style={{ fontSize: isMobile ? 22 : 28, fontWeight: 900, color: T.cream, marginBottom: 20, letterSpacing: "-0.02em" }}>Your Cart</h1>
+      <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: isMobile ? 26 : 34, fontWeight: 400, fontStyle: "italic", color: T.cream, marginBottom: 20, letterSpacing: "-0.01em" }}>Your Cart</h1>
 
       {cart.length === 0 ? (
         <div style={{ textAlign: "center", padding: "80px 20px" }}>
@@ -3121,8 +3121,8 @@ function CartPage({ cart, setCart, setPage }) {
                   )}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 9, color: T.muted, letterSpacing: "0.05em", textTransform: "uppercase" }}>{item.brand}</div>
-                  <div style={{ fontWeight: 700, color: T.cream, marginBottom: 4, fontSize: 14, lineHeight: 1.3 }}>{item.name}</div>
+                  <div style={{ fontSize: 9, color: T.gold, letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 700 }}>{item.brand}</div>
+                  <div style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontWeight: 400, color: T.cream, marginBottom: 4, fontSize: 15, lineHeight: 1.3 }}>{item.name}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ fontWeight: 800, color: T.gold, fontSize: 15 }}>${item.price.toFixed(2)}</span>
                     {item.fulfillmentType && item.fulfillmentType !== "local" && (
@@ -3141,7 +3141,7 @@ function CartPage({ cart, setCart, setPage }) {
 
           {/* Order summary panel */}
           <div style={{ background: T.bgCard, border: `1px solid ${T.borderMid}`, borderRadius: 20, padding: 22, height: "fit-content" }}>
-            <h3 style={{ color: T.cream, fontWeight: 800, fontSize: 16, marginBottom: 20, letterSpacing: "-0.01em" }}>Order Summary</h3>
+            <h3 style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic", color: T.cream, fontWeight: 400, fontSize: 18, marginBottom: 20 }}>Order Summary</h3>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12, fontSize: 14, color: T.creamMid }}><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12, fontSize: 14, color: deliveryFee === 0 ? T.success : T.creamMid }}>
               <span>Delivery</span>
@@ -3233,7 +3233,7 @@ function CheckoutPage({ cart, setCart, setPage, setActiveOrder }) {
       <button onClick={() => setPage("cart")} style={{ background: "none", border: "none", color: T.gold, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, marginBottom: 28, fontWeight: 700, fontSize: 14 }}>
         <ArrowLeft size={16} /> Back to Cart
       </button>
-      <h1 style={{ fontSize: isMobile ? 22 : 28, fontWeight: 900, color: T.cream, marginBottom: 30, letterSpacing: "-0.02em" }}>Checkout</h1>
+      <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: isMobile ? 26 : 34, fontWeight: 400, fontStyle: "italic", color: T.cream, marginBottom: 30, letterSpacing: "-0.01em" }}>Checkout</h1>
 
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 300px", gap: 24 }}>
         <div>
@@ -5638,7 +5638,7 @@ function JoinPage({ setPage }) {
           <div style={{ width: 72, height: 72, borderRadius: "50%", background: `linear-gradient(135deg, ${T.goldLight}, ${T.gold})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, margin: "0 auto 24px", boxShadow: T.goldGlow }}>
             ✓
           </div>
-          <h2 style={{ fontSize: 26, fontWeight: 900, color: T.cream, marginBottom: 12, letterSpacing: "-0.02em" }}>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 30, fontWeight: 400, fontStyle: "italic", color: T.cream, marginBottom: 12, letterSpacing: "-0.01em" }}>
             Application Received!
           </h2>
           <p style={{ fontSize: 15, color: T.creamMid, lineHeight: 1.6, marginBottom: 32 }}>
@@ -5890,7 +5890,7 @@ function JoinPage({ setPage }) {
             <span style={{ background: `linear-gradient(135deg, ${T.goldLight}, ${T.gold})`, borderRadius: 100, padding: "3px 10px", fontSize: 11, fontWeight: 800, color: "#fff" }}>NOW LAUNCHING</span>
             <span style={{ fontSize: 12, color: T.creamMid, fontWeight: 500 }}>Washington DC · Atlanta · Houston</span>
           </div>
-          <h1 style={{ fontSize: isMobile ? 34 : 52, fontWeight: 900, color: T.cream, letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 20 }}>
+          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: isMobile ? 36 : 56, fontWeight: 400, fontStyle: "italic", color: T.cream, lineHeight: 1.15, marginBottom: 20, letterSpacing: "-0.01em" }}>
             Join the Beauty<br/>
             <span style={{ background: `linear-gradient(90deg, ${T.goldLight}, ${T.gold})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Delivery Movement</span>
           </h1>
@@ -5952,7 +5952,7 @@ function JoinPage({ setPage }) {
             <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(135deg, ${T.goldLight}, ${T.gold})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🚗</div>
             <span style={{ fontSize: 12, fontWeight: 800, color: T.gold, textTransform: "uppercase", letterSpacing: "0.1em" }}>For Drivers</span>
           </div>
-          <h2 style={{ fontSize: isMobile ? 26 : 36, fontWeight: 900, color: T.cream, letterSpacing: "-0.02em", marginBottom: 12 }}>Drive. Earn. Thrive.</h2>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: isMobile ? 28 : 40, fontWeight: 400, fontStyle: "italic", color: T.cream, letterSpacing: "-0.01em", marginBottom: 12 }}>Drive. Earn. Thrive.</h2>
           <p style={{ fontSize: 15, color: T.creamMid, lineHeight: 1.6, maxWidth: 560, marginBottom: 36 }}>
             Oshun drivers make deliveries from local beauty hubs directly to customers. Set your own hours, earn competitive pay, and be part of something bigger.
           </p>
@@ -6009,7 +6009,7 @@ function JoinPage({ setPage }) {
             <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(135deg, ${T.purple}, ${T.purpleDark})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🏬</div>
             <span style={{ fontSize: 12, fontWeight: 800, color: T.purple, textTransform: "uppercase", letterSpacing: "0.1em" }}>For Brands</span>
           </div>
-          <h2 style={{ fontSize: isMobile ? 26 : 36, fontWeight: 900, color: T.cream, letterSpacing: "-0.02em", marginBottom: 12 }}>Your Products,<br/>Closer to Customers</h2>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: isMobile ? 28 : 40, fontWeight: 400, fontStyle: "italic", color: T.cream, letterSpacing: "-0.01em", marginBottom: 12 }}>Your Products,<br/>Closer to Customers</h2>
           <p style={{ fontSize: 15, color: T.creamMid, lineHeight: 1.6, maxWidth: 560, marginBottom: 36 }}>
             Oshun places your products inside trusted local beauty hubs — the shops your customers already love. You focus on making great products. We handle distribution and delivery.
           </p>
@@ -6060,7 +6060,7 @@ function JoinPage({ setPage }) {
 
         {/* ── BOTTOM CTA STRIP ────────────────────────────── */}
         <div style={{ background: `linear-gradient(135deg, ${T.bgCard}, ${T.bgCardAlt})`, border: `1px solid ${T.borderMid}`, borderRadius: 20, padding: isMobile ? "32px 24px" : "40px 48px", textAlign: "center" }}>
-          <h3 style={{ fontSize: isMobile ? 22 : 28, fontWeight: 900, color: T.cream, marginBottom: 10, letterSpacing: "-0.02em" }}>Ready to join Oshun?</h3>
+          <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: isMobile ? 24 : 32, fontWeight: 400, fontStyle: "italic", color: T.cream, marginBottom: 10, letterSpacing: "-0.01em" }}>Ready to join Oshun?</h3>
           <p style={{ fontSize: 14, color: T.creamMid, marginBottom: 28, lineHeight: 1.5 }}>
             Applications take less than 3 minutes. Our team reviews every submission personally.
           </p>
@@ -8560,12 +8560,11 @@ export default function App() {
         {page === "checkout"  && <CheckoutPage      cart={cart} setCart={setCart} setPage={setPage} setActiveOrder={setActiveOrder} />}
         {page === "tracking"  && <TrackingPage   order={activeOrder} setPage={setPage} setCart={setCart} />}
         {page === "booking"   && <BookingPage    service={selectedService} setPage={setPage} />}
-        {page === "profile"        && <ProfilePage         user={user} setPage={setPage} />}
-        {page === "tryon"          && <VirtualTryOnPage    setPage={setPage} />}
+        {page === "profile"        && (user ? <ProfilePage user={user} setPage={setPage} /> : (setPage("home"), null))}
         {page === "subscribe"      && <SubscriptionBoxPage setPage={setPage} user={user} onAuthOpen={() => setAuthOpen(true)} />}
-        {page === "dashboard"      && <BusinessDashboard   user={user} activeOrder={activeOrder} advanceActiveOrderStatus={advanceActiveOrderStatus} dispatchDelivery={dispatchDelivery} requestTab={bizTab} />}
-        {page === "driver"         && <DriverDashboard     user={user} activeOrder={activeOrder} advanceActiveOrderStatus={advanceActiveOrderStatus} />}
-        {page === "branddashboard" && <BrandDashboard      user={user} requestTab={brandTab} />}
+        {page === "dashboard"      && (user?.type === "business" ? <BusinessDashboard user={user} activeOrder={activeOrder} advanceActiveOrderStatus={advanceActiveOrderStatus} dispatchDelivery={dispatchDelivery} requestTab={bizTab} /> : (setPage("home"), null))}
+        {page === "driver"         && (user?.type === "driver"   ? <DriverDashboard   user={user} activeOrder={activeOrder} advanceActiveOrderStatus={advanceActiveOrderStatus} /> : (setPage("home"), null))}
+        {page === "branddashboard" && (user?.type === "brand"    ? <BrandDashboard    user={user} requestTab={brandTab} /> : (setPage("home"), null))}
         {page === "join"           && <JoinPage            setPage={setPage} />}
         {page === "community"      && <CommunityFeed       user={user} cart={cart} setCart={setCart} setPage={setPage} />}
         {page === "creator"        && <CreatorHub          user={user} setPage={setPage} />}
